@@ -11,6 +11,7 @@ import com.ctre.phoenix6.configs.VoltageConfigs;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -18,7 +19,10 @@ import frc.robot.Constants;
 public class ExtenderSubsystem extends SubsystemBase {
   private final TalonFX m_extenderMotor = new TalonFX(Constants.EXTENDER_MOTOR_ID);
   private final VoltageOut m_voltageOut = new VoltageOut(0);
-
+  private final double initialPosRotations;
+  private final double GearRatio = 20;
+  private final double LowerBoundRadians = -1;
+  private final double UpperBoundRadians = 1;
   CurrentLimitsConfigs currentLimitConfigs = new CurrentLimitsConfigs()
     .withStatorCurrentLimit(40)
     .withStatorCurrentLimitEnable(true)
@@ -35,20 +39,34 @@ public class ExtenderSubsystem extends SubsystemBase {
 
     m_extenderMotor.getConfigurator().apply(currentLimitConfigs);
     m_extenderMotor.getConfigurator().apply(voltageConfigs);
+    initialPosRotations = m_extenderMotor.getPosition().getValueAsDouble();
   }
 
-  public void motorSetVoltage(double speed){
-    speed = Math.max(-1, Math.min(1,speed));
-    m_extenderMotor.setControl(m_voltageOut.withOutput(12 * speed));
+  public double getPosRadians(){
+    return (m_extenderMotor.getPosition().getValueAsDouble() - initialPosRotations) / (GearRatio) * 2 * Math.PI;
   }
-
+  
   public void motorStop(){
     m_extenderMotor.setControl(m_voltageOut.withOutput(0));
   }
 
+  public void motorSetVoltage(double speed){
+    speed = Math.max(-1, Math.min(1,speed));
+
+    if (getPosRadians() <= LowerBoundRadians && speed < 0 || getPosRadians() >= UpperBoundRadians && speed > 0){
+      motorStop();
+      speed = 0;
+    }
+    m_extenderMotor.setControl(m_voltageOut.withOutput(12 * speed * Math.cos(getPosRadians())));
+  }
+
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    SmartDashboard.putNumber("Current Position", getPosRadians());
+    SmartDashboard.putNumber("Initial Position", initialPosRotations);
+    SmartDashboard.putNumber("Voltage", m_extenderMotor.getMotorVoltage().getValueAsDouble());
+    SmartDashboard.putNumber("Current", m_extenderMotor.getStatorCurrent().getValueAsDouble());
+
     }
     public Command setVoltageCommand(DoubleSupplier speed){
       return runEnd(() -> motorSetVoltage(speed.getAsDouble()), this::motorStop);
