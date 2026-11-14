@@ -59,9 +59,9 @@ public class RobotContainer {
     new Trigger(m_exampleSubsystem::exampleCondition)
         .onTrue(new ExampleCommand(m_exampleSubsystem));
 
-      Trigger extenderMoveTrigger = new Trigger(() -> Math.abs(rightJoystick.getY()) > 0.01);
+      Trigger extenderMoveTrigger = new Trigger(() -> Math.abs(rightJoystick.getY()) >0.2);
 
-      extenderMoveTrigger.whileTrue(m_extenderSubsystem.setVoltageCommand(() -> rightJoystick.getY()));
+      extenderMoveTrigger.whileTrue(m_extenderSubsystem.setVoltageCommand(() -> -1 * rightJoystick.getY()));
 
     // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
     // cancelling on release.
