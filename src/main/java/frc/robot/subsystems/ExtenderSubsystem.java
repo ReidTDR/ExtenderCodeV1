@@ -81,12 +81,8 @@ public class ExtenderSubsystem extends SubsystemBase {
 
   public void motorSetVoltage(double speed){ 
     speed = Math.max(-1, Math.min(1,speed)); //Speed ranges from -1 to 1
-    double volts = speed > 0 ? 
-    12 * speed + kG * Math.cos(getPosRadians()) 
-    : (speed <= 0 ?
-    12 * speed + 5 * kG * Math.cos(getPosRadians()) 
-    : 0)
-    ;
+    double volts = 12 * speed + 5 * kG * Math.cos(getPosRadians()); //Scale speed from -12 to 12 and add a gravity dampening term
+
      if (getPosRadians() <= LowerBoundRadians && speed < 0 || getPosRadians() >= UpperBoundRadians && speed > 0){ //Cuts motor if it hits its bounds and is trying to move past them
        motorStop();
       }
