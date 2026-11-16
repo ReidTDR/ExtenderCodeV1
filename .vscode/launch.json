@@ -13,7 +13,7 @@
     },
     {
       "type": "wpilib",
-      "name": "WPILib Desktop Debug",
+       "name": "WPILib Desktop Debug",
       "request": "launch",
       "desktop": true
     },

@@ -33,7 +33,8 @@ public class ExtenderSubsystem extends SubsystemBase {
   private final double UpperBoundRadians = Math.toRadians(81); //81 Degrees
   private final double ExtenderLength = 0.381; //Meters
   private final double TotalExtenderWeight = 9; //Kg
-  private final double kG = 2.25; //Volts to hold against gravity when angle is horizontal
+  private final double m_speed = 0; //Gives a universal speed for commands to use (notably in Periodic)
+  private double kG = 0.364;
   CurrentLimitsConfigs currentLimitConfigs = new CurrentLimitsConfigs()
     .withStatorCurrentLimit(40)
     .withStatorCurrentLimitEnable(true)
@@ -46,7 +47,6 @@ public class ExtenderSubsystem extends SubsystemBase {
   public final MechanismRoot2d armRoot = armMechanism2d.getRoot("Arm Root", 0.75, 1.5); //Sets the "Moutning Point" of the mechanism
   public final MechanismLigament2d armLigament = armRoot.append(new MechanismLigament2d("Extender Arm", 1.5, 0)); //Creates the ligament
 
-
   /** Creates a new ExtenderSubsystem. */
   public ExtenderSubsystem() {
 
@@ -57,6 +57,7 @@ public class ExtenderSubsystem extends SubsystemBase {
     m_extenderMotor.getConfigurator().apply(voltageConfigs);
     m_extenderMotor.setNeutralMode(NeutralModeValue.Brake);
     initialPosRotations = m_extenderMotor.getPosition().getValueAsDouble();
+    SmartDashboard.putNumber("Extender:kG Value", 0 );
   }
 
   public double getPosRadians(){
@@ -79,6 +80,7 @@ public class ExtenderSubsystem extends SubsystemBase {
       m_extenderMotor.setControl(m_voltageOut.withOutput(volts));
     }
     SmartDashboard.putNumber("Extender:Input Speed", volts); //Lets us read the input value 
+
   }
 
 
@@ -109,17 +111,32 @@ public class ExtenderSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+        if (m_speed == 0 && getPosRadians() != LowerBoundRadians || m_speed == 0 && getPosRadians() != UpperBoundRadians){
+      m_extenderMotor.setControl(m_voltageOut.withOutput(kG * Math.cos(getPosRadians())));
+    }
+    //Extender Motor Values
     SmartDashboard.putNumber("Extender:Current Position", getPosRadians());
     SmartDashboard.putNumber("Extender:Initial Position", initialPosRotations);
     SmartDashboard.putNumber("Extender:Voltage", m_extenderMotor.getMotorVoltage().getValueAsDouble());
     SmartDashboard.putNumber("Extender:Current", m_extenderMotor.getStatorCurrent().getValueAsDouble());
     SmartDashboard.putNumber("Extender:Temperature", m_extenderMotor.getDeviceTemp().getValueAsDouble());
 
-    SmartDashboard.putData("Extender Mechanism", armMechanism2d);
+    //Extender Tuning Values
+    kG = SmartDashboard.getNumber("Extender:kG Value", 0);
 
+    //Extender Mechanism/Simulation Values
+    SmartDashboard.putData("Extender Mechanism", armMechanism2d);
     armLigament.setAngle(Math.toDegrees(getPosRadians()));
+
+
     }
     public Command setVoltageCommand(DoubleSupplier speed){
       return runEnd(() -> motorSetVoltage(speed.getAsDouble()), this::motorStop); //Runs motor untill its no longer being triggered. then it stops it.
     }
 }
+
+
+//NOTES:
+//In the simulation view, when at max height, the voltage and current wavers up and down consistantly. This is because gravity is trying to pull it down, so it applies a voltage 
+//which launches it back up, and it falls again repeating this cycle. Since we have a Brake slice on the gearbox, this isn't an issue in real life.
+//This also doesn't need any code to keep it up since we have the Brake slice.
