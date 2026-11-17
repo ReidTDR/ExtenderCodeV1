@@ -11,6 +11,7 @@ import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.ExtenderSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj.Joystick;
 
@@ -59,9 +60,11 @@ public class RobotContainer {
     new Trigger(m_exampleSubsystem::exampleCondition)
         .onTrue(new ExampleCommand(m_exampleSubsystem));
 
-      Trigger extenderMoveTrigger = new Trigger(() -> Math.abs(rightJoystick.getY()) >0.2);
+      Trigger extenderMoveUpTrigger = new Trigger(() -> leftJoystick.getPOV() == 0);
+      Trigger extenderMoveDownTrigger = new Trigger(() -> leftJoystick.getPOV() == 180);
 
-      extenderMoveTrigger.whileTrue(m_extenderSubsystem.setVoltageCommand(() -> -1 * rightJoystick.getY()));
+      extenderMoveUpTrigger.whileTrue(m_extenderSubsystem.setVoltageCommand(() -> -1 * 12));
+      extenderMoveDownTrigger.whileTrue(m_extenderSubsystem.setVoltageCommand(() -> 1 * 12));
 
     // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
     // cancelling on release.

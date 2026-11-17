@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.VoltageConfigs;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -46,6 +47,7 @@ public class ExtenderSubsystem extends SubsystemBase {
   public final Mechanism2d armMechanism2d = new Mechanism2d(4, 4); //Creates a box w/ dimensions 3Meters x 3Meters
   public final MechanismRoot2d armRoot = armMechanism2d.getRoot("Arm Root", 0.75, 1.5); //Sets the "Moutning Point" of the mechanism
   public final MechanismLigament2d armLigament = armRoot.append(new MechanismLigament2d("Extender Arm", 1.5, 0)); //Creates the ligament
+
 
   /** Creates a new ExtenderSubsystem. */
   public ExtenderSubsystem() {
