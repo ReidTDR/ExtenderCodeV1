@@ -63,8 +63,8 @@ public class RobotContainer {
       Trigger extenderMoveUpTrigger = new Trigger(() -> leftJoystick.getPOV() == 0);
       Trigger extenderMoveDownTrigger = new Trigger(() -> leftJoystick.getPOV() == 180);
 
-      extenderMoveUpTrigger.whileTrue(m_extenderSubsystem.setVoltageCommand(() -> -1 * 12));
-      extenderMoveDownTrigger.whileTrue(m_extenderSubsystem.setVoltageCommand(() -> 1 * 12));
+      extenderMoveUpTrigger.whileTrue(m_extenderSubsystem.setVoltageCommand(() -> -12));
+      extenderMoveDownTrigger.whileTrue(m_extenderSubsystem.setVoltageCommand(() -> 12));
 
     // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
     // cancelling on release.
